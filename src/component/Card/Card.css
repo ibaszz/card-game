@@ -1,0 +1,25 @@
+div {
+  width: 9rem;
+  height: 13rem;
+}
+
+.c {
+  position: absolute;
+  cursor: pointer;
+  will-change: transform, opacity;
+  background-color: white;
+  background-repeat: no-repeat;
+  background-position: center center;
+  border-radius: 10px;
+  box-shadow: 0 12.5px 100px -10px rgba(50, 50, 73, 0.4), 0 10px 10px -10px rgba(50, 50, 73, 0.3);
+}
+
+.front {
+  background-size: 50% 50%;
+}
+
+.back {
+  background-size: auto 85%;
+  background-image: url(https://opengameart.org/sites/default/files/card%20back%20red.png);
+}
+
