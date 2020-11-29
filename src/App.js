@@ -1,4 +1,6 @@
 import Card from './component/Card'
+import Button from './component/Button';
+import Modal from './component/Modal';
 import React, {useState, useRef} from 'react'
 import './App.css';
 
@@ -14,7 +16,7 @@ const difficultyMaxImages = (index) => {
 }
 
 const difficultyMaxCards = (index) => {
-  return (index + 1) * 8
+  return (index + 1) * 10
 }
 
 const getPlayedImages = (difficult) => {
@@ -56,8 +58,9 @@ function App() {
   const [difficulty, setDifficulty] = useState(0);
   const [playedImages, setPlayedImages] = useState(getPlayedImages(difficulty));
   const [playCards, setPlayCards] = useState(getDifficulty(difficulty, playedImages));
-  const [guessCard, setGuessCard] = useState()
+  const [guessCard, setGuessCard] = useState(null)
   const [playable, setPlayable] = useState(false);
+  const [result, setResult] = useState(false);
   const interval = useRef(null);
 
   const hoverCard = (index) => {
@@ -82,9 +85,9 @@ function App() {
       return r;
     }))
     if (guessedCard === correctCard) {
-      alert("berhasil");
+      setResult("Selamat Anda Berhasil")
     } else {
-      alert("gagal")
+      setResult("Maaf Anda Belum Berhasil")
     }
   }
 
@@ -119,19 +122,15 @@ function App() {
 
   const onStart = () => {
     let playCard = playCards;
-    console.log(playCard)
     interval.current = setInterval(() => {
-      console.log(playCard);
       const shuffledCard = shuffleCard(playCards);
       playCard = playCard.map((r, i) => {
         if (!r.shuffled && shuffledCard[i].shuffled) {
-          console.log(i);
           r.shuffled = true;
         }
         return r;
       })
       setPlayCards(shuffledCard);
-      console.log(playCard);
       if (playCard.filter(r => !r.shuffled).length === 0){
         setPlayable(true);
         setTimeout(() => {
@@ -147,18 +146,23 @@ function App() {
     onClick: () => selectCard(i),
     onMouseEnter: () => hoverCard(i),
     onMouseLeave: () => hoverCard(i)
-  }) : (i) => null;
+  }) : () => null;
 
   return (
     <div className="App">
-      <div>Guess Card </div>
-      <div><Card image={guessCard} isOn={guessCard !== null}></Card></div>
+      <div className="guess-card-text">Guess <span className="guess-card-border">C</span>ard </div>
+      <div className="guess-card-container"><Card image={guessCard} isOn={guessCard !== null}></Card></div>
       <div className="card-container">
         {playCards.map((card, i) =>
         <Card key={`cards[${i}]`} {...action(i)} image={card.image} isSelected={card.isSelected} isOn={card.isOn} isHover={card.isHover} />)}
       </div>
-      <button onClick={onStart}> Start </button>
-      {playable && <button onClick={submitGuess}> Submit </button>}
+      {playable ? <Button onClick={submitGuess}>Submit Guess</Button> : <Button onClick={onStart}> Start </Button> }
+      <Modal result={result} onClose={() => {
+        setResult(false);
+        setGuessCard(null);
+        setPlayCards(getDifficulty(difficulty, playedImages))
+        setPlayable(false)
+      }}/>
     </div>
   );
 }
