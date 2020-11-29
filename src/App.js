@@ -1,5 +1,5 @@
 import Card from './component/Card'
-import React, {useState} from 'react'
+import React, {useState, useRef} from 'react'
 import './App.css';
 
 const images = [
@@ -17,9 +17,14 @@ const difficultyMaxCards = (index) => {
   return (index + 1) * 8
 }
 
-const generatePlayCard = (maxImage, maxCards) => {
-  const cards = images.splice(0, maxImage);
-  const playCard = []
+const getPlayedImages = (difficult) => {
+  const maxImage = difficultyMaxImages(difficult);
+  const playedImages = images.splice(0, maxImage);
+  return playedImages;
+}
+
+const generatePlayCard = (cards, maxCards) => {
+  const playCard = [];
   for (let i = 0; i < maxCards; i++) {
     playCard.push({
       image: cards[Math.floor(Math.random() * cards.length)],
@@ -31,13 +36,29 @@ const generatePlayCard = (maxImage, maxCards) => {
   return playCard;
 }
 
-const getDifficulty = (index) => {
-  return generatePlayCard(difficultyMaxImages(index), difficultyMaxCards(index))
+const getDifficulty = (index, playedImages) => {
+  return generatePlayCard(playedImages, difficultyMaxCards(index))
+}
+
+const shuffleCard = (playCard) => {
+  playCard = playCard.map(r => ({...r, isOn: false}));
+  let mustBeOpenedCard = playCard.length / 2;
+  while(playCard.filter(r => r.isOn).length !== mustBeOpenedCard) {
+    const random = Math.floor(Math.random() * playCard.length);
+    playCard[random].isOn = true;
+  };
+  return playCard;
 }
 
 function App() {
   const [difficulty, setDifficulty] = useState(0);
-  const [playCards, setPlayCards] = useState(getDifficulty(difficulty));
+  const [playedImages, setPlayedImages] = useState(getPlayedImages(difficulty));
+  const [playCards, setPlayCards] = useState(getDifficulty(difficulty, playedImages));
+  const [guessCard, setGuessCard] = useState()
+  const [playable, setPlayable] = useState(false);
+  const [countdown, setCountdown] = useState(5);
+  const interval = useRef(null);
+
   const hoverCard = (index) => {
     const playCard = playCards.map((r, i) =>{
       if (i === index)  {
@@ -62,17 +83,36 @@ function App() {
     setPlayCards(playCard)
   }
 
+  const onStart = () => {
+    let count = countdown
+    interval.current = setInterval(() => {
+      count--;
+      setCountdown(count);
+      setPlayCards(shuffleCard(playCards));
+      if (count <= 0){
+        setPlayable(true);
+        setPlayCards(playCards.map(r => ({...r, isOn: false})))
+        setGuessCard(playedImages[Math.floor(Math.random() * playedImages.length)])
+        clearInterval(interval.current);
+      }
+    }, 1000)
+  }
 
-
-
-  console.log(playCards);
+  const action = playable ? (i) => ({
+    onClick: () => selectCard(i),
+    onMouseEnter: () => hoverCard(i),
+    onMouseLeave: () => hoverCard(i)
+  }) : (i) => null;
 
   return (
     <div className="App">
+      <div>Guess Card </div>
+      <div><Card image={guessCard} isOn={guessCard}></Card></div>
       <div className="card-container">
         {playCards.map((card, i) =>
-        <Card key={`cards[${i}]`} onClick={() => selectCard(i)} image={card.image} isSelected={card.isSelected} isOn={card.isOn} isHover={card.isHover} onMouseEnter={() => hoverCard(i)} onMouseLeave={() => hoverCard(i)}/>)}
+        <Card key={`cards[${i}]`} {...action(i)} image={card.image} isSelected={card.isSelected} isOn={card.isOn} isHover={card.isHover} />)}
       </div>
+      <button onClick={onStart}> Start </button>
     </div>
   );
 }
