@@ -71,16 +71,49 @@ function App() {
     setPlayCards(playCard)
   }
 
-  const selectCard = (index) => {
-    const playCard = playCards.map((r, i) =>{
-      if (i === index)  {
-        r.isSelected = !r.isSelected;
-        return r;
-      } else {
-        return r;
+  const submitGuess = () => {
+    const guessedCard = playCards.filter(r => r.isSelected &&  r.image === guessCard).length;
+    const correctCard = playCards.filter(r => r.image === guessCard).length;
+    setPlayCards(playCards.map(r => {
+      if (r.isSelected) {
+        r.isOn = true;
       }
-    });
-    setPlayCards(playCard)
+      return r;
+    }))
+    if (guessedCard === correctCard) {
+      alert("berhasil");
+    } else {
+      alert("gagal")
+    }
+  }
+
+  const selectCard = (index) => {
+    const correctCard = playCards.filter(r => r.image === guessCard).length;
+    const selectedCard = playCards.filter(r => r.isSelected).length;
+    // check max choosen 
+    if (!playCards[index].isSelected) {
+      if (selectedCard < correctCard) {
+        console.log(selectedCard, correctCard);
+        setPlayCards(playCards.map((r, i) =>{
+          if (i === index)  {
+            r.isSelected = !r.isSelected;
+            return r;
+          } else {
+            return r;
+          }
+        }))
+      }
+    } else {
+      console.log(selectedCard, correctCard);
+      setPlayCards(playCards.map((r, i) =>{
+        if (i === index)  {
+          r.isSelected = !r.isSelected;
+          return r;
+        } else {
+          return r;
+        }
+      }))
+    }
   }
 
   const onStart = () => {
@@ -107,12 +140,13 @@ function App() {
   return (
     <div className="App">
       <div>Guess Card </div>
-      <div><Card image={guessCard} isOn={guessCard}></Card></div>
+      <div><Card image={guessCard} isOn={guessCard !== null}></Card></div>
       <div className="card-container">
         {playCards.map((card, i) =>
         <Card key={`cards[${i}]`} {...action(i)} image={card.image} isSelected={card.isSelected} isOn={card.isOn} isHover={card.isHover} />)}
       </div>
       <button onClick={onStart}> Start </button>
+      {playable && <button onClick={submitGuess}> Submit </button>}
     </div>
   );
 }
