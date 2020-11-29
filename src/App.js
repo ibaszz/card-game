@@ -30,7 +30,8 @@ const generatePlayCard = (cards, maxCards) => {
       image: cards[Math.floor(Math.random() * cards.length)],
       isHover: false, 
       isOn: false,
-      isSelected: false
+      isSelected: false,
+      shuffled: false
     });
   }
   return playCard;
@@ -46,6 +47,7 @@ const shuffleCard = (playCard) => {
   while(playCard.filter(r => r.isOn).length !== mustBeOpenedCard) {
     const random = Math.floor(Math.random() * playCard.length);
     playCard[random].isOn = true;
+    playCard[random].shuffled = true;
   };
   return playCard;
 }
@@ -56,7 +58,6 @@ function App() {
   const [playCards, setPlayCards] = useState(getDifficulty(difficulty, playedImages));
   const [guessCard, setGuessCard] = useState()
   const [playable, setPlayable] = useState(false);
-  const [countdown, setCountdown] = useState(5);
   const interval = useRef(null);
 
   const hoverCard = (index) => {
@@ -117,18 +118,29 @@ function App() {
   }
 
   const onStart = () => {
-    let count = countdown
+    let playCard = playCards;
+    console.log(playCard)
     interval.current = setInterval(() => {
-      count--;
-      setCountdown(count);
-      setPlayCards(shuffleCard(playCards));
-      if (count <= 0){
+      console.log(playCard);
+      const shuffledCard = shuffleCard(playCards);
+      playCard = playCard.map((r, i) => {
+        if (!r.shuffled && shuffledCard[i].shuffled) {
+          console.log(i);
+          r.shuffled = true;
+        }
+        return r;
+      })
+      setPlayCards(shuffledCard);
+      console.log(playCard);
+      if (playCard.filter(r => !r.shuffled).length === 0){
         setPlayable(true);
-        setPlayCards(playCards.map(r => ({...r, isOn: false})))
-        setGuessCard(playedImages[Math.floor(Math.random() * playedImages.length)])
+        setTimeout(() => {
+          setPlayCards(playCards.map(r => ({...r, isOn: false})))
+          setGuessCard(playedImages[Math.floor(Math.random() * playedImages.length)])
+        }, 1000);
         clearInterval(interval.current);
       }
-    }, 1000)
+    }, 1000);
   }
 
   const action = playable ? (i) => ({
