@@ -21,24 +21,57 @@ const generatePlayCard = (maxImage, maxCards) => {
   const cards = images.splice(0, maxImage);
   const playCard = []
   for (let i = 0; i < maxCards; i++) {
-    playCard.push(cards[Math.floor(Math.random() * cards.length)]);
+    playCard.push({
+      image: cards[Math.floor(Math.random() * cards.length)],
+      isHover: false, 
+      isOn: false,
+      isSelected: false
+    });
   }
   return playCard;
 }
 
 const getDifficulty = (index) => {
-  return {
-    cards: generatePlayCard(difficultyMaxImages(index), difficultyMaxCards(index))
-  }
+  return generatePlayCard(difficultyMaxImages(index), difficultyMaxCards(index))
 }
 
 function App() {
   const [difficulty, setDifficulty] = useState(0);
+  const [playCards, setPlayCards] = useState(getDifficulty(difficulty));
+  const hoverCard = (index) => {
+    const playCard = playCards.map((r, i) =>{
+      if (i === index)  {
+        r.isHover = !r.isHover
+        return r;
+      } else {
+        return r;
+      }
+    });
+    setPlayCards(playCard)
+  }
+
+  const selectCard = (index) => {
+    const playCard = playCards.map((r, i) =>{
+      if (i === index)  {
+        r.isSelected = !r.isSelected;
+        return r;
+      } else {
+        return r;
+      }
+    });
+    setPlayCards(playCard)
+  }
+
+
+
+
+  console.log(playCards);
+
   return (
     <div className="App">
       <div className="card-container">
-        {getDifficulty(difficulty).cards.map(image =>
-        <Card image={image} />)}
+        {playCards.map((card, i) =>
+        <Card key={`cards[${i}]`} onClick={() => selectCard(i)} image={card.image} isSelected={card.isSelected} isOn={card.isOn} isHover={card.isHover} onMouseEnter={() => hoverCard(i)} onMouseLeave={() => hoverCard(i)}/>)}
       </div>
     </div>
   );

@@ -1,6 +1,8 @@
 .App {
   margin: auto;
   text-align: center;
+  width: 100vh;
+  height: 100vh;
 }
 
 .card-container {
@@ -14,7 +16,7 @@
 }
 
 .card-container > * {
-  margin-top: 10px;
+  margin-top: 1.75rem;
 }
 
 .App-logo {
