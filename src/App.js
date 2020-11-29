@@ -60,6 +60,7 @@ function App() {
   const [playCards, setPlayCards] = useState(getDifficulty(difficulty, playedImages));
   const [guessCard, setGuessCard] = useState(null)
   const [playable, setPlayable] = useState(false);
+  const [isShuffling, setIsShuffling] = useState(false);
   const [result, setResult] = useState(false);
   const interval = useRef(null);
 
@@ -97,7 +98,6 @@ function App() {
     // check max choosen 
     if (!playCards[index].isSelected) {
       if (selectedCard < correctCard) {
-        console.log(selectedCard, correctCard);
         setPlayCards(playCards.map((r, i) =>{
           if (i === index)  {
             r.isSelected = !r.isSelected;
@@ -108,7 +108,6 @@ function App() {
         }))
       }
     } else {
-      console.log(selectedCard, correctCard);
       setPlayCards(playCards.map((r, i) =>{
         if (i === index)  {
           r.isSelected = !r.isSelected;
@@ -121,6 +120,7 @@ function App() {
   }
 
   const onStart = () => {
+    setIsShuffling(true);
     let playCard = playCards;
     interval.current = setInterval(() => {
       const shuffledCard = shuffleCard(playCards);
@@ -135,6 +135,7 @@ function App() {
         setPlayable(true);
         setTimeout(() => {
           setPlayCards(playCards.map(r => ({...r, isOn: false})))
+          setIsShuffling(false);
           setGuessCard(playedImages[Math.floor(Math.random() * playedImages.length)])
         }, 1000);
         clearInterval(interval.current);
@@ -156,7 +157,7 @@ function App() {
         {playCards.map((card, i) =>
         <Card key={`cards[${i}]`} {...action(i)} image={card.image} isSelected={card.isSelected} isOn={card.isOn} isHover={card.isHover} />)}
       </div>
-      {playable ? <Button onClick={submitGuess}>Submit Guess</Button> : <Button onClick={onStart}> Start </Button> }
+      {playable ? <Button onClick={submitGuess}>Submit Guess</Button> : <Button onClick={!isShuffling ? onStart : null}> Start </Button> }
       <Modal result={result} onClose={() => {
         setResult(false);
         setGuessCard(null);
